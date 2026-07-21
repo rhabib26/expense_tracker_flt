@@ -1,14 +1,13 @@
 import 'package:expense_tracker/models/transaction.dart';
+import 'package:expense_tracker/widgets/new_transaction.dart';
+import 'package:expense_tracker/widgets/transaction_list.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-// Todo: New Transaction
-// Todo: User Transaction
-// Todo:  Transaction List
+// Todo: Responsive UI and Adaptive Design
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -18,7 +17,25 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        fontFamily: 'OpenSans',
+        textTheme: ThemeData.light().textTheme.copyWith(
+          titleLarge: TextStyle(
+            fontFamily: 'OpenSans',
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        appBarTheme: AppBarTheme(
+          titleTextStyle: TextStyle(
+            fontFamily: 'Quicksand',
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
       home: MyHomePage(),
     );
   }
@@ -32,21 +49,59 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Transaction> transactions = [
-    Transaction(id: 1, title: 'New Shoes', amount: 70, date: DateTime.now()),
-    Transaction(id: 2, title: 'Old Bag', amount: 200, date: DateTime.now()),
-    Transaction(id: 3, title: 'MacBook', amount: 900, date: DateTime.now()),
-  ];
-  TextEditingController titleController = TextEditingController();
-  TextEditingController amountController = TextEditingController();
+  final titleController = TextEditingController();
+  final amountController = TextEditingController();
+
+  final List<Transaction> _userTransaction = [];
+  void _addNewTransaction(String title, int amt, DateTime selectedDate) {
+    final newTransaction = Transaction(
+      id: DateTime.now().toString(),
+      title: title,
+      amount: amt,
+      date: selectedDate,
+    );
+
+    setState(() {
+      _userTransaction.add(newTransaction);
+    });
+  }
+
+  void _startAddNewTransaction(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return GestureDetector(
+          onTap: () {},
+          behavior: HitTestBehavior.opaque,
+          child: NewTransaction(onAddTx: _addNewTransaction),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).primaryColor,
         elevation: 10,
         title: Text('Expense Tracker'),
+
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.add),
+            color: Colors.redAccent,
+            iconSize: 30.0,
+          ),
+        ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _startAddNewTransaction(context),
+        child: Icon(Icons.add, color: Colors.white),
+        backgroundColor: Theme.of(context).primaryColor,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -67,93 +122,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-
-          Card(
-            elevation: 5,
-            // margin: EdgeInsets.all(20),
-            child: Container(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  TextField(
-                    decoration: InputDecoration(labelText: "Name"),
-                    controller: titleController,
-                  ),
-                  TextField(
-                    decoration: InputDecoration(labelText: "Amount"),
-                    controller: amountController,
-                  ),
-                  SizedBox(height: 20),
-
-                  TextButton(
-                    onPressed: () {
-                      print(titleController.text);
-                    },
-                    child: Text(
-                      "Add Expense",
-                      style: TextStyle(color: Colors.deepPurple, fontSize: 18),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          Column(
-            children: [
-              ...transactions.map((item) {
-                return Card(
-                  child: Row(
-                    children: [
-                      Container(
-                        margin: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.red, width: 2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          "\$ ${item.amount}",
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.title,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            DateFormat.yMMMEd().format(item.date),
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }),
-              // Card(
-              //   child: Row(
-              //     children: [
-              //       Text("\$ 20"),
-              //       Column(children: [Text("Expense title"), Text("date")]),
-              //     ],
-              //   ),
-              // ),
-            ],
-          ),
+          TransactionList(transactions: _userTransaction),
+          // UserTransaction(),
         ],
       ),
     );
